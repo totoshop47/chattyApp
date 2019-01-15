@@ -17,7 +17,7 @@ class App extends Component {
           id: 2,
           username: "Anonymous",
           content: "No, I think you lost them. You lost your marbles Bob. You lost them for good."
-        }
+        },
       ]
     }
   }
@@ -35,6 +35,15 @@ class App extends Component {
     }, 3000);
   }
 
+  getValue(value){
+    console.log(value);
+    this.setState({messages: this.state.messages.concat({
+          id: 1,
+          username: "Bob",
+          content: value,
+        })});
+  }
+
   render() {
 
     return (
@@ -45,20 +54,33 @@ class App extends Component {
         <main className="messages">
             <MessageList messages={this.state.messages} />
         </main>
-        <ChatBar user={this.state.currentUser}/>
+        <ChatBar user={this.state.currentUser} getValue={this.getValue.bind(this)}/>
       </div>
     )
   }
 }
 
 class ChatBar extends Component {
+  // constructor(props){
+  //   super(props);
+
+  //   // this.handleKeyPress = this.handleKeyPress.bind(this);
+  // }
   render(){
     const currentUser = this.props.user;
+    const handleKeyPress = (event) => {
+      if(event.key == "Enter"){
+        console.log('enter press here! ')
+        console.log(event.target.value)
+        this.props.getValue(event.target.value);
+        event.target.value = ''
+      }
+    }
 
     return(
       <footer className="chatbar">
         <input className="chatbar-username" placeholder="Your Name (Optional)" defaultValue={currentUser.name} />
-        <input className="chatbar-message" placeholder="Type a message and hit ENTER" />
+        <input className="chatbar-message" onKeyUp={handleKeyPress} placeholder="Type a message and hit ENTER" />
       </footer>
     )
   }
