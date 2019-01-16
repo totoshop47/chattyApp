@@ -7,41 +7,40 @@ class App extends Component {
 
     this.state = {
       currentUser: {name: "Bob"}, // optional. if currentUser is not defined, it means the user is Anonymous
-      messages: [
-        {
-          id: 1,
-          username: "Bob",
-          content: "Has anyone seen my marbles?",
-        },
-        {
-          id: 2,
-          username: "Anonymous",
-          content: "No, I think you lost them. You lost your marbles Bob. You lost them for good."
-        },
-      ]
+      messages: []
     }
   }
 
   componentDidMount() {
-    console.log("componentDidMount <App />");
-    setTimeout(() => {
-      console.log("Simulating incoming message");
-      // Add a new message to the list of messages in the data store
-      const newMessage = {id: 3, username: "Michelle", content: "Hello there!"};
-      const messages = this.state.messages.concat(newMessage)
-      // Update the state of the app component.
-      // Calling setState will trigger a call to render() in App and all child components.
-      this.setState({messages: messages})
-    }, 3000);
-  }
+    this.socket = new WebSocket("ws://localhost:3001");
+    this.socket.onmessage = (event) => {
+      // console.log(event.data)
+      let incomingMessage = JSON.parse(event.data);
+      console.log("incomingMessage ",incomingMessage);
+
+      let oldAndNewMessages = this.state.messages.concat(incomingMessage);
+
+      // console.log("incoming ",incomingMessage);
+      // console.log("oldAndNewMessages ",oldAndNewMessages);
+      this.setState({
+        messages: oldAndNewMessages
+      });
+
+      console.log(this.state)
+    }
+
+  } //componentDidMount Closes here.
 
   getValue(value){
-    console.log(value);
-    this.setState({messages: this.state.messages.concat({
-          id: 1,
-          username: "Bob",
-          content: value,
-        })});
+  // send to server state msg
+    // console.log("testing ",value)
+    let newMessage = {
+      currentUser: this.state.currentUser.name,
+      content: value
+    };
+    // console.log(newMessage)
+    this.socket.send(JSON.stringify(newMessage));
+
   }
 
   render() {
@@ -52,7 +51,7 @@ class App extends Component {
           <a href="/" className="navbar-brand">Chatty</a>
         </nav>
         <main className="messages">
-            <MessageList messages={this.state.messages} />
+          <MessageList messages={this.state.messages} username={this.state.currentUser.name}/>
         </main>
         <ChatBar user={this.state.currentUser} getValue={this.getValue.bind(this)}/>
       </div>
@@ -61,26 +60,40 @@ class App extends Component {
 }
 
 class ChatBar extends Component {
-  // constructor(props){
-  //   super(props);
+  constructor(props){
+    super(props);
 
-  //   // this.handleKeyPress = this.handleKeyPress.bind(this);
-  // }
+    this.state = {
+      currentUser: this.props.user,
+      //content: ""
+    }
+    this.handleKeyPress = this.handleKeyPress.bind(this);
+  }
+
+handleKeyPress = (event) => {
+  if(event.key == "Enter"){
+
+    let content = event.target.value;
+    // console.log('content',content);
+
+    //this.props.getValue(this.state);
+    this.props.getValue(content);
+
+    // console.log('enter press here! ')
+    // console.log(event.target.value)
+    event.target.value = '';
+
+  }
+}
+
   render(){
     const currentUser = this.props.user;
-    const handleKeyPress = (event) => {
-      if(event.key == "Enter"){
-        console.log('enter press here! ')
-        console.log(event.target.value)
-        this.props.getValue(event.target.value);
-        event.target.value = ''
-      }
-    }
+
 
     return(
       <footer className="chatbar">
         <input className="chatbar-username" placeholder="Your Name (Optional)" defaultValue={currentUser.name} />
-        <input className="chatbar-message" onKeyUp={handleKeyPress} placeholder="Type a message and hit ENTER" />
+        <input className="chatbar-message" onKeyPress={this.handleKeyPress} placeholder="Type a message and hit ENTER" />
       </footer>
     )
   }
@@ -94,8 +107,9 @@ class MessageList extends Component {
 
   render(){
     const messagesFromApp = this.props.messages;
-    const msgsArray = messagesFromApp.map( (msg, index) => {
-      return <Message key={index} message={msg.content} username={msg.username}/>
+    // const usernameFromApp = this.props.username;
+    const msgsArray = messagesFromApp.map((msg) => {
+      return <Message key={msg.id} message={msg.content} username={msg.currentUser}/>
      })
 
     return(
