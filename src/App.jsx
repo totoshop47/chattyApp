@@ -17,69 +17,46 @@ class App extends Component {
   componentDidMount() {
     this.socket = new WebSocket("ws://localhost:3001");
     this.socket.onmessage = (event) => {
-      // console.log(event.data)
+
       let incomingMessage = JSON.parse(event.data);
 
       // RECEIVIMG MSG AND NOTIFICATION AND OTHER STUFF
 
-      // console.log("incomingMessage ",incomingMessage);
-
       let oldAndNewMessages = this.state.messages.concat(incomingMessage);
-
-      console.log("incoming ",incomingMessage);
-      // console.log("oldAndNewMessages ",oldAndNewMessages);
-
 
       if (incomingMessage.type === "message") {
       // IF TYPE MESSAGE DO THIS
-        console.log('is Message')
         this.setState({
           messages: oldAndNewMessages
         });
-    } else if (incomingMessage.type === "notification") {
-      // IF TYPE NOTIFICATION DO THIS
-        console.log('notiication data', incomingMessage.content)
-        this.setState({
-          notification: incomingMessage.content
-        });
-        console.log('is Notification')
-    } else if (incomingMessage.type === "onlineUser") {
-        console.log('user count');
-        this.setState({
-          counter: incomingMessage.counter
-        });
-        console.log(this.state.counter);
-    }
-
-
-
-
-
-
-
-      // console.log(this.state)
+      } else if (incomingMessage.type === "notification") {
+        // IF TYPE NOTIFICATION DO THIS
+          this.setState({
+            notification: incomingMessage.content
+          });
+      } else if (incomingMessage.type === "onlineUser") {
+          this.setState({
+            counter: incomingMessage.counter
+          });
+      }
     }
 
   } //componentDidMount Closes here.
 
   getContent(value){
   // send to server state msg
-    // console.log("testing ",value)
     let newMessage = {
       currentUser: this.state.currentUser.name,
       content: value,
       type: "message"
     };
-    // console.log(newMessage)
     this.socket.send(JSON.stringify(newMessage));
-
   }
 
   getUsername(value){
 
     const oldUsername = this.state.currentUser.name;
     const newUsername = value;
-
     const content = oldUsername +" changed his name to "+newUsername;
 
     console.log(content);
@@ -89,22 +66,14 @@ class App extends Component {
       type: "notification"
     }
 
-    // let newUser = {
-
-    //   currentUser: value,
-
-    // };
-    // // console.log(newMessage)
     this.socket.send(JSON.stringify(newNotification));
     this.setState({
       currentUser: {name: newUsername},
       notification: content
     });
-
   }
 
   render() {
-
     return (
       <div>
         <nav className="navbar">
@@ -126,7 +95,6 @@ class ChatBar extends Component {
 
     this.state = {
       currentUser: {name: this.props.user},
-      //content: ""
     }
     this.handleContent = this.handleContent.bind(this);
   }
@@ -140,22 +108,14 @@ class ChatBar extends Component {
 
   handleContent = (event) => {
     if(event.key == "Enter"){
-
       let content = event.target.value;
-      // console.log('content',content);
 
-      //this.props.getValue(this.state);
       this.props.getContent(content);
-
-      // console.log('enter press here! ')
-      // console.log(event.target.value)
       event.target.value = '';
-
     }
   }
+
   render(){
-
-
     return(
       <footer className="chatbar">
         <input className="chatbar-username" onKeyPress={this.handleUsername} placeholder="Your Name (Optional)" defaultValue="Anonymous" />
@@ -168,12 +128,10 @@ class ChatBar extends Component {
 class MessageList extends Component {
   constructor(props){
     super(props)
-
   }
 
   render(){
     const messagesFromApp = this.props.messages;
-    // const usernameFromApp = this.props.username;
     const msgsArray = messagesFromApp.map((msg) => {
       return <Message key={msg.id} message={msg.content} username={msg.currentUser}/>
      })
@@ -203,6 +161,5 @@ class Message extends Component {
     )
   }
 }
-
 
 export default App;
