@@ -43,17 +43,29 @@ wss.on('connection', (ws, req) => {
   ws.on('message', (msg) => {
     let newMessage = JSON.parse(msg);
     newMessage.id = uuid();
-    console.log(newMessage);
-
+    // console.log(newMessage);
+    console.log('msg',newMessage.type)
 
     wss.clients.forEach(sock => {
       if (sock.readyState === ws.OPEN) {
-        console.log(newMessage)
+        // console.log(newMessage)
         sock.send(JSON.stringify(newMessage));
       } else {
         sock.terminate();
       }
     });
+
+
+  // if(msg.type === "notification"){
+  //   wss.clients.forEach(sock => {
+  //     if (sock.readyState === ws.OPEN) {
+  //       // console.log(newMessage)
+  //       sock.send(JSON.stringify(newMessage));
+  //     } else {
+  //       sock.terminate();
+  //     }
+  //   });
+  // }
 
 
   }); //ws.on message function ends here.

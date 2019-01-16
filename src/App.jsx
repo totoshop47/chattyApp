@@ -2,12 +2,14 @@ import React, {Component} from 'react';
 
 
 class App extends Component {
+
   constructor(props){
     super(props)
 
     this.state = {
       currentUser: {name: "Bob"}, // optional. if currentUser is not defined, it means the user is Anonymous
-      messages: []
+      messages: [],
+      notification: ""
     }
   }
 
@@ -16,30 +18,81 @@ class App extends Component {
     this.socket.onmessage = (event) => {
       // console.log(event.data)
       let incomingMessage = JSON.parse(event.data);
-      console.log("incomingMessage ",incomingMessage);
+
+      // RECEIVIMG MSG AND NOTIFICATION AND OTHER STUFF
+
+      // console.log("incomingMessage ",incomingMessage);
 
       let oldAndNewMessages = this.state.messages.concat(incomingMessage);
 
       // console.log("incoming ",incomingMessage);
       // console.log("oldAndNewMessages ",oldAndNewMessages);
-      this.setState({
-        messages: oldAndNewMessages
-      });
 
-      console.log(this.state)
+
+      if (incomingMessage.type === "message") {
+      // IF TYPE MESSAGE DO THIS
+        console.log('is Message')
+        this.setState({
+          messages: oldAndNewMessages
+        });
+    } else if (incomingMessage.type === "notification") {
+      // IF TYPE NOTIFICATION DO THIS
+        console.log('notiication data', incomingMessage.content)
+        this.setState({
+          notification: incomingMessage.content
+        })
+        console.log('is Notification')
+    }
+
+
+
+
+
+
+
+      // console.log(this.state)
     }
 
   } //componentDidMount Closes here.
 
-  getValue(value){
+  getContent(value){
   // send to server state msg
     // console.log("testing ",value)
     let newMessage = {
       currentUser: this.state.currentUser.name,
-      content: value
+      content: value,
+      type: "message"
     };
     // console.log(newMessage)
     this.socket.send(JSON.stringify(newMessage));
+
+  }
+
+  getUsername(value){
+
+    const oldUsername = this.state.currentUser.name;
+    const newUsername = value;
+
+    const content = oldUsername +" changed his name to "+newUsername;
+
+    console.log(content);
+    const newNotification = {
+      content: content,
+      currentUser: this.state.currentUser.name,
+      type: "notification"
+    }
+
+    // let newUser = {
+
+    //   currentUser: value,
+
+    // };
+    // // console.log(newMessage)
+    this.socket.send(JSON.stringify(newNotification));
+    this.setState({
+      currentUser: {name: newUsername},
+      notification: content
+    });
 
   }
 
@@ -51,53 +104,58 @@ class App extends Component {
           <a href="/" className="navbar-brand">Chatty</a>
         </nav>
         <main className="messages">
-          <MessageList messages={this.state.messages} username={this.state.currentUser.name}/>
+          <MessageList messages={this.state.messages} username={this.state.currentUser} notification={this.state.notification} />
         </main>
-        <ChatBar user={this.state.currentUser} getValue={this.getValue.bind(this)}/>
+        <ChatBar getUsername={this.getUsername.bind(this)} getContent={this.getContent.bind(this)}/>
       </div>
     )
   }
-}
+} //App component closes here
 
 class ChatBar extends Component {
   constructor(props){
     super(props);
 
     this.state = {
-      currentUser: this.props.user,
+      currentUser: {name: this.props.user},
       //content: ""
     }
-    this.handleKeyPress = this.handleKeyPress.bind(this);
+    this.handleContent = this.handleContent.bind(this);
   }
 
-handleKeyPress = (event) => {
-  if(event.key == "Enter"){
+  handleUsername = (event) => {
+    if(event.key == "Enter"){
+      let username = event.target.value;
+      this.props.getUsername(username);
+    }
+  };
 
-    let content = event.target.value;
-    // console.log('content',content);
+  handleContent = (event) => {
+    if(event.key == "Enter"){
 
-    //this.props.getValue(this.state);
-    this.props.getValue(content);
+      let content = event.target.value;
+      // console.log('content',content);
 
-    // console.log('enter press here! ')
-    // console.log(event.target.value)
-    event.target.value = '';
+      //this.props.getValue(this.state);
+      this.props.getContent(content);
 
+      // console.log('enter press here! ')
+      // console.log(event.target.value)
+      event.target.value = '';
+
+    }
   }
-}
-
   render(){
-    const currentUser = this.props.user;
 
 
     return(
       <footer className="chatbar">
-        <input className="chatbar-username" placeholder="Your Name (Optional)" defaultValue={currentUser.name} />
-        <input className="chatbar-message" onKeyPress={this.handleKeyPress} placeholder="Type a message and hit ENTER" />
+        <input className="chatbar-username" onKeyPress={this.handleUsername} placeholder="Your Name (Optional)" defaultValue="test" />
+        <input className="chatbar-message" onKeyPress={this.handleContent} placeholder="Type a message and hit ENTER" />
       </footer>
     )
   }
-}
+} //Chatbar component closes here.
 
 class MessageList extends Component {
   constructor(props){
@@ -114,10 +172,9 @@ class MessageList extends Component {
 
     return(
       <main className="messages">
-        <h1> underone </h1>
         { msgsArray }
         <div className="message system">
-          Anonymous1 changed their name to nomnom.
+          { this.props.notification }
         </div>
       </main>
     )
