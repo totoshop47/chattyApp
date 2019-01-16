@@ -7,9 +7,10 @@ class App extends Component {
     super(props)
 
     this.state = {
-      currentUser: {name: "Bob"}, // optional. if currentUser is not defined, it means the user is Anonymous
+      currentUser: {name: "Anonymous"}, // optional. if currentUser is not defined, it means the user is Anonymous
       messages: [],
-      notification: ""
+      notification: "",
+      counter: 0
     }
   }
 
@@ -25,7 +26,7 @@ class App extends Component {
 
       let oldAndNewMessages = this.state.messages.concat(incomingMessage);
 
-      // console.log("incoming ",incomingMessage);
+      console.log("incoming ",incomingMessage);
       // console.log("oldAndNewMessages ",oldAndNewMessages);
 
 
@@ -40,8 +41,14 @@ class App extends Component {
         console.log('notiication data', incomingMessage.content)
         this.setState({
           notification: incomingMessage.content
-        })
+        });
         console.log('is Notification')
+    } else if (incomingMessage.type === "onlineUser") {
+        console.log('user count');
+        this.setState({
+          counter: incomingMessage.counter
+        });
+        console.log(this.state.counter);
     }
 
 
@@ -102,6 +109,7 @@ class App extends Component {
       <div>
         <nav className="navbar">
           <a href="/" className="navbar-brand">Chatty</a>
+          <p className="userOnline">{this.state.counter} Users Online</p>
         </nav>
         <main className="messages">
           <MessageList messages={this.state.messages} username={this.state.currentUser} notification={this.state.notification} />
@@ -150,7 +158,7 @@ class ChatBar extends Component {
 
     return(
       <footer className="chatbar">
-        <input className="chatbar-username" onKeyPress={this.handleUsername} placeholder="Your Name (Optional)" defaultValue="test" />
+        <input className="chatbar-username" onKeyPress={this.handleUsername} placeholder="Your Name (Optional)" defaultValue="Anonymous" />
         <input className="chatbar-message" onKeyPress={this.handleContent} placeholder="Type a message and hit ENTER" />
       </footer>
     )
