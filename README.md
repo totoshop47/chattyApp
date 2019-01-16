@@ -4,7 +4,7 @@
 
 A client-side SPA (single-page app) built with ReactJS, Webpack, Babel, Node.js and Web Sockets. The client-side app communicates with a server via WebSockets for multi-user real-time updates. No persistent database is involved; the focus is on the client-side experience
 
-!["Screenshot of chattyapp"] (#)
+!["Screenshot of chattyapp"](https://github.com/totoshop47/chattyApp/blob/master/docs/chattyApp.png)
 
 ### Usage
 
