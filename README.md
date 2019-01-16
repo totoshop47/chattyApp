@@ -1,28 +1,30 @@
-React Boilerplate
+# ChattyApp
+
 =====================
 
-A minimal and light dev environment for ReactJS.
+A client-side SPA (single-page app) built with ReactJS, Webpack, Babel, Node.js and Web Sockets. The client-side app communicates with a server via WebSockets for multi-user real-time updates. No persistent database is involved; the focus is on the client-side experience
+
+!["Screenshot of chattyapp"] (#)
 
 ### Usage
 
-Clone the boilerplate and create your own git repo.
+Clone the repo to your local machine. Install the dependencies and start the server.
 
-```
-git clone git@github.com:lighthouse-labs/react-simple-boilerplate.git
-cd react-simple-boilerplate
-git remote rm origin
-git remote add origin [YOUR NEW REPOSITORY]
-# Manually update your package.json file
-```
-
-Install the dependencies and start the server.
+1st server
 
 ```
 npm install
 npm start
 open http://localhost:3000
 ```
+2nd server
 
+```
+cd to `chatty_server`
+npm install
+npm start
+open http://localhost:3000
+```
 ### Static Files
 
 You can store static files like images, fonts, etc in the `build` folder.
